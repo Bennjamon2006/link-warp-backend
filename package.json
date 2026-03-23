@@ -1,0 +1,29 @@
+{
+  "name": "linkwarp-api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The official REST API of Link Warp",
+  "main": "dist/index.js",
+  "author": "Benjamin Rivas <benjaminrivas500@gmail.com>",
+  "license": "MIT",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc && tsc-alias",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "start": "node dist/index.js",
+    "commit": "cz"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.0",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
