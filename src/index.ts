@@ -1,9 +1,9 @@
-import express from "express";
+import express from 'express';
 
 const app = express();
 
-app.get("/", (req, res) => {
-  res.send("Hello, LinkWarp API!");
+app.get('/', (req, res) => {
+  res.send('Hello, LinkWarp API!');
 });
 
 const port = process.env.PORT || 3000;
