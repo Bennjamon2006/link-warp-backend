@@ -1,9 +1,10 @@
 import express from 'express';
+import router from './routes/index';
 
 const app = express();
 
-app.get('/', (req, res) => {
-  res.send('Hello, LinkWarp API!');
-});
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(router);
 
 export default app;

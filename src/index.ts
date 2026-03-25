@@ -1,6 +1,6 @@
-import app from './app';
-import { connect } from './db';
-import config from './config';
+import app from '@/app';
+import { connect } from '@/db';
+import config from '@/config';
 
 connect().catch((error) => {
   console.error('Failed to connect to the database:', error);
