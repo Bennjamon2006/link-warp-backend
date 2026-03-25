@@ -1,20 +1,14 @@
-import express from 'express';
-
+import app from './app';
 import { connect } from './db';
+import config from './config';
 
 connect().catch((error) => {
   console.error('Failed to connect to the database:', error);
   process.exit(1);
 });
 
-const app = express();
+const { port, host } = config.server;
 
-app.get('/', (req, res) => {
-  res.send('Hello, LinkWarp API!');
-});
-
-const port = process.env.PORT || 3000;
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+app.listen(port, host, () => {
+  console.log(`Server is running on http://${host}:${port}`);
 });
