@@ -6,6 +6,7 @@ const configSchema = z.object({
   DATABASE_URL: z
     .string()
     .default('postgresql://linkwarp:linkwarp@localhost:5432/linkwarp'),
+  JWT_SECRET: z.string().default('your_jwt_secret_key'),
 });
 
 const env = configSchema.parse(process.env);
@@ -17,5 +18,8 @@ export default {
   },
   database: {
     url: env.DATABASE_URL,
+  },
+  jwt: {
+    secret: env.JWT_SECRET,
   },
 };

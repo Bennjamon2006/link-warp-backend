@@ -1,0 +1,41 @@
+import { Request, Response } from 'express';
+import { z } from 'zod';
+import authService from '@/services/auth.service';
+import { loginSchema } from '@/schemas/login.schema';
+
+async function login(req: Request, res: Response) {
+  const parseResult = loginSchema.safeParse(req.body);
+
+  if (!parseResult.success) {
+    return res.status(400).json({
+      error: 'Invalid request body',
+      details: z.treeifyError(parseResult.error),
+    });
+  }
+
+  const { email, password } = parseResult.data;
+
+  try {
+    const token = await authService.login({ email, password });
+
+    res.cookie('session_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    res.json({ message: 'Login successful' });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Invalid credentials') {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    console.error('Error during login:', error);
+
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+export default {
+  login,
+};
