@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import authService from '@/services/auth.service';
 import { loginSchema } from '@/schemas/login.schema';
+import config from '@/config';
 
 async function login(req: Request, res: Response) {
   const parseResult = loginSchema.safeParse(req.body);
@@ -20,7 +21,7 @@ async function login(req: Request, res: Response) {
 
     res.cookie('session_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: config.runtime.isProduction,
       sameSite: 'strict',
     });
 
