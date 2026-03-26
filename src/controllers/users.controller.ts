@@ -4,6 +4,7 @@ import z from 'zod';
 import usersService from '@/services/users.service';
 import { createUserSchema } from '@/schemas/createUser.schema';
 import isUniqueError from '@/helpers/isUniqueError';
+import mapUser from '@/mappers/user.mapper';
 
 async function createUser(req: Request, res: Response) {
   const parseResult = createUserSchema.safeParse(req.body);
@@ -33,6 +34,13 @@ async function createUser(req: Request, res: Response) {
   }
 }
 
+async function getProfile(req: Request, res: Response) {
+  const user = req.user!;
+
+  res.json(mapUser(user));
+}
+
 export default {
   createUser,
+  getProfile,
 };
