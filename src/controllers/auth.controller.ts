@@ -22,7 +22,7 @@ async function login(req: Request, res: Response) {
     res.cookie('session_token', token, {
       httpOnly: true,
       secure: config.runtime.isProduction,
-      sameSite: 'strict',
+      sameSite: 'lax',
     });
 
     res.json({ message: 'Login successful' });

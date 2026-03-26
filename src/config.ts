@@ -30,6 +30,7 @@ const configSchema = z.object({
 
     return 'your_jwt_secret_key';
   }),
+  SESSION_MAX_AGE: z.coerce.number().default(7 * 24 * 60 * 60),
 });
 
 const result = configSchema.safeParse(process.env);
@@ -49,8 +50,9 @@ export default {
   database: {
     url: env.DATABASE_URL,
   },
-  jwt: {
+  auth: {
     secret: env.JWT_SECRET,
+    sessionMaxAge: env.SESSION_MAX_AGE,
   },
   runtime: {
     env: NODE_ENV,

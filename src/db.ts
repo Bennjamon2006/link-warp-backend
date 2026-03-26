@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User, Space, Link } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import config from './config';
 
@@ -31,3 +31,5 @@ export async function disconnect() {
 
   console.log('Disconnected from the database');
 }
+
+export { User, Space, Link };
