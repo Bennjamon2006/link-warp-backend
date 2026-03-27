@@ -34,8 +34,19 @@ async function getSpaceBySlug(slug: string) {
   return space;
 }
 
+const checkOwnership = async (spaceId: string, userId: string) => {
+  const space = await prisma.space.findUnique({
+    where: {
+      id: spaceId,
+    },
+  });
+
+  return space?.ownerId === userId;
+};
+
 export default {
   createSpace,
   getUserSpaces,
   getSpaceBySlug,
+  checkOwnership,
 };
