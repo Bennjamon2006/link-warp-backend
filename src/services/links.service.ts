@@ -21,6 +21,15 @@ async function createLink(data: CreateLinkInput, userId: string) {
   return link;
 }
 
+async function getSpaceLinks(spaceId: string) {
+  const links = await prisma.link.findMany({
+    where: { spaceId },
+  });
+
+  return links;
+}
+
 export default {
   createLink,
+  getSpaceLinks,
 };

@@ -3,6 +3,7 @@ import spacesService from '@/services/spaces.service';
 import { createSpaceSchema } from '@/schemas/createSpace.schema';
 import z from 'zod';
 import isUniqueError from '@/helpers/isUniqueError';
+import linksService from '@/services/links.service';
 
 async function createSpace(req: Request, res: Response) {
   try {
@@ -58,8 +59,27 @@ async function getSpaceBySlug(req: Request<{ slug: string }>, res: Response) {
   }
 }
 
+async function getSpaceLinks(req: Request<{ slug: string }>, res: Response) {
+  try {
+    const { slug } = req.params;
+    const space = await spacesService.getSpaceBySlug(slug);
+
+    if (!space) {
+      return res.status(404).json({ error: 'Space not found' });
+    }
+
+    const links = await linksService.getSpaceLinks(space.id);
+    res.json(links);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+
+    console.error(error);
+  }
+}
+
 export default {
   createSpace,
   getUserSpaces,
   getSpaceBySlug,
+  getSpaceLinks,
 };
