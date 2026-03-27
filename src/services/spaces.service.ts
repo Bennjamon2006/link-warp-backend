@@ -24,7 +24,18 @@ async function getUserSpaces(userId: string) {
   return spaces;
 }
 
+async function getSpaceBySlug(slug: string) {
+  const space = await prisma.space.findUnique({
+    where: {
+      slug,
+    },
+  });
+
+  return space;
+}
+
 export default {
   createSpace,
   getUserSpaces,
+  getSpaceBySlug,
 };

@@ -41,7 +41,25 @@ async function getUserSpaces(req: Request, res: Response) {
   }
 }
 
+async function getSpaceBySlug(req: Request<{ slug: string }>, res: Response) {
+  try {
+    const { slug } = req.params;
+    const space = await spacesService.getSpaceBySlug(slug);
+
+    if (!space) {
+      return res.status(404).json({ error: 'Space not found' });
+    }
+
+    res.json(space);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+
+    console.error(error);
+  }
+}
+
 export default {
   createSpace,
   getUserSpaces,
+  getSpaceBySlug,
 };
