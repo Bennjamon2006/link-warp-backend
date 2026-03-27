@@ -37,6 +37,27 @@ async function createLink(req: Request, res: Response) {
   }
 }
 
+async function getLinkBySlug(
+  req: Request<{ space_slug: string; link_slug: string }>,
+  res: Response
+) {
+  try {
+    const { space_slug, link_slug } = req.params;
+
+    const link = await linksService.getLinkBySlug(link_slug, space_slug);
+
+    if (!link) {
+      return res.status(404).json({ error: 'Link not found' });
+    }
+
+    res.json(link);
+  } catch (error) {
+    console.error('Error fetching link:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 export default {
   createLink,
+  getLinkBySlug,
 };

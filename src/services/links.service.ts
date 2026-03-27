@@ -29,7 +29,27 @@ async function getSpaceLinks(spaceId: string) {
   return links;
 }
 
+async function getLinkBySlug(slug: string, spaceSlug: string) {
+  const space = await prisma.space.findUnique({
+    where: { slug: spaceSlug },
+  });
+
+  if (!space) {
+    return null;
+  }
+
+  const link = await prisma.link.findFirst({
+    where: {
+      slug,
+      spaceId: space.id,
+    },
+  });
+
+  return link;
+}
+
 export default {
   createLink,
   getSpaceLinks,
+  getLinkBySlug,
 };
