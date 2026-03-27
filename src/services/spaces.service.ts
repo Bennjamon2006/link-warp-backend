@@ -14,6 +14,17 @@ async function createSpace(data: CreateSpaceInput, userId: string) {
   return space;
 }
 
+async function getUserSpaces(userId: string) {
+  const spaces = await prisma.space.findMany({
+    where: {
+      ownerId: userId,
+    },
+  });
+
+  return spaces;
+}
+
 export default {
   createSpace,
+  getUserSpaces,
 };

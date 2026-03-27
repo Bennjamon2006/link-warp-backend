@@ -29,6 +29,19 @@ async function createSpace(req: Request, res: Response) {
   }
 }
 
+async function getUserSpaces(req: Request, res: Response) {
+  try {
+    const userId = req.user!.id;
+    const spaces = await spacesService.getUserSpaces(userId);
+    res.json(spaces);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+
+    console.error(error);
+  }
+}
+
 export default {
   createSpace,
+  getUserSpaces,
 };

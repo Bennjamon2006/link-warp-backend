@@ -5,5 +5,6 @@ import { verifyAuth } from '@/middlewares/verifyAuth';
 const router = Router();
 
 router.post('/', verifyAuth, spacesController.createSpace);
+router.get('/', verifyAuth, spacesController.getUserSpaces);
 
 export default router;
