@@ -8,9 +8,10 @@
   "license": "MIT",
   "type": "commonjs",
   "scripts": {
-    "build": "tsc && tsc-alias",
+    "build": "tsc -p tsconfig.build.json && tsc-alias",
     "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/index.ts",
     "start": "node dist/index.js",
+    "test": "vitest",
     "commit": "cz",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
@@ -57,6 +58,7 @@
     "cookie-parser": "^1.4.7",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "vitest": "^4.1.2",
     "zod": "^4.3.6"
   }
 }

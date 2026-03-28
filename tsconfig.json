@@ -3,8 +3,6 @@
     "lib": ["ESNext"],
     "target": "ESNext",
     "module": "CommonJS",
-    "outDir": "./dist",
-    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -14,6 +12,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["./src"],
+  "include": ["./src", "./test"],
   "exclude": ["./node_modules", "./eslint.config.mts"]
 }
