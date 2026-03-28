@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
   Request,
   Response,
@@ -8,21 +9,26 @@ import type {
 
 type RouteMethod = 'get' | 'post' | 'put' | 'delete' | 'patch';
 
+type GenericRequest = Request<any, any, any>;
+type GenericResponse = Response<any, any>;
+
+type Handler = (
+  req: GenericRequest,
+  res: GenericResponse,
+  next: NextFunction
+) => void | GenericResponse | Promise<void | GenericResponse>;
+
 type RouteDefinition = {
   method: RouteMethod;
   path: string;
-  handler: RequestHandler;
+  handler: Handler;
   middlewares: RequestHandler[];
 };
 
 export default abstract class Controller {
   private routes: RouteDefinition[] = [];
 
-  private addRoute(
-    method: RouteMethod,
-    path: string,
-    ...handlers: RequestHandler[]
-  ) {
+  private addRoute(method: RouteMethod, path: string, ...handlers: Handler[]) {
     const handler = handlers.pop();
     const middlewares = handlers;
 
@@ -39,23 +45,23 @@ export default abstract class Controller {
     this.routes.push({ method, path, handler, middlewares });
   }
 
-  protected get(path: string, ...handlers: RequestHandler[]) {
+  protected get(path: string, ...handlers: Handler[]) {
     this.addRoute('get', path, ...handlers);
   }
 
-  protected post(path: string, ...handlers: RequestHandler[]) {
+  protected post(path: string, ...handlers: Handler[]) {
     this.addRoute('post', path, ...handlers);
   }
 
-  protected put(path: string, ...handlers: RequestHandler[]) {
+  protected put(path: string, ...handlers: Handler[]) {
     this.addRoute('put', path, ...handlers);
   }
 
-  protected delete(path: string, ...handlers: RequestHandler[]) {
+  protected delete(path: string, ...handlers: Handler[]) {
     this.addRoute('delete', path, ...handlers);
   }
 
-  protected patch(path: string, ...handlers: RequestHandler[]) {
+  protected patch(path: string, ...handlers: Handler[]) {
     this.addRoute('patch', path, ...handlers);
   }
 

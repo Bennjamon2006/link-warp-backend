@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import usersController from '@/controllers/users.controller';
-import { verifyAuth } from '@/middlewares/verifyAuth';
+import UsersController from '@/controllers/users.controller';
 
 const usersRouter = Router();
+const controller = new UsersController();
 
-usersRouter.get('/me', verifyAuth, usersController.getProfile);
-usersRouter.post('/', usersController.createUser);
+controller.registerRoutes(usersRouter);
 
 export default usersRouter;

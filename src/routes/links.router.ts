@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import linksController from '@/controllers/links.controller';
-import { verifyAuth } from '@/middlewares/verifyAuth';
+import LinksController from '@/controllers/LinksController';
 
-const router = Router();
+const linksRouter = Router();
+const controller = new LinksController();
 
-router.post('/', verifyAuth, linksController.createLink);
-router.get('/:space_slug/:link_slug', linksController.getLinkBySlug);
+controller.registerRoutes(linksRouter);
 
-export default router;
+export default linksRouter;
