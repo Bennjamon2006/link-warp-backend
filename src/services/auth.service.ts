@@ -3,6 +3,7 @@ import { sign, verify } from 'jsonwebtoken';
 import { prisma } from '@/db';
 import type { LoginInput } from '@/schemas/login.schema';
 import config from '@/config';
+import RequestError from '@/core/RequestError';
 
 type TokenPayload = {
   userId: string;
@@ -21,13 +22,13 @@ async function login({ email, password }: LoginInput): Promise<string> {
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
-    throw new Error('Invalid credentials');
+    throw RequestError.unauthorized('Invalid credentials');
   }
 
   const isPasswordValid = await compare(password, user.password);
 
   if (!isPasswordValid) {
-    throw new Error('Invalid credentials');
+    throw RequestError.unauthorized('Invalid credentials');
   }
 
   const tokenPayload: TokenPayload = {
@@ -41,12 +42,12 @@ async function login({ email, password }: LoginInput): Promise<string> {
   return token;
 }
 
-async function verifyToken(token: string): Promise<TokenPayload | null> {
+async function verifyToken(token: string): Promise<TokenPayload> {
   try {
     const decoded = verify(token, config.auth.secret);
 
     if (!decoded || !isValidTokenPayload(decoded)) {
-      return null;
+      throw RequestError.unauthorized('Invalid token');
     }
 
     return decoded;
@@ -55,14 +56,10 @@ async function verifyToken(token: string): Promise<TokenPayload | null> {
       error instanceof Error &&
       (error.name === 'TokenExpiredError' || error.name === 'JsonWebTokenError')
     ) {
-      return null;
+      throw RequestError.unauthorized('Invalid token');
     }
 
-    if (!config.runtime.isProduction) {
-      console.error('Error verifying token:', error);
-    }
-
-    return null;
+    throw error;
   }
 }
 

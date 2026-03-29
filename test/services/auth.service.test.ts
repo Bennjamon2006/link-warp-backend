@@ -69,23 +69,23 @@ describe('Auth Service', () => {
     );
   });
 
-  it('should return null for an invalid token', async () => {
+  it('should reject invalid token', async () => {
     const token = crypto.randomUUID();
 
     jsonwebtokenMock.verify.mockImplementation(() => {
       throw new Error('Invalid token');
     });
 
-    const result = await authService.verifyToken(token);
-
-    expect(result).toBeNull();
+    await expect(authService.verifyToken(token)).rejects.toThrow(
+      'Invalid token'
+    );
     expect(jsonwebtokenMock.verify).toHaveBeenCalledWith(
       token,
       expect.any(String)
     );
   });
 
-  it('should return null for an expired token', async () => {
+  it('should reject an expired token', async () => {
     const token = crypto.randomUUID();
 
     jsonwebtokenMock.verify.mockImplementation(() => {
@@ -94,23 +94,22 @@ describe('Auth Service', () => {
       throw error;
     });
 
-    const result = await authService.verifyToken(token);
-
-    expect(result).toBeNull();
+    await expect(authService.verifyToken(token)).rejects.toThrow(
+      'Invalid token'
+    );
     expect(jsonwebtokenMock.verify).toHaveBeenCalledWith(
       token,
       expect.any(String)
     );
   });
-
-  it('should return null for a token with invalid payload', async () => {
+  it('should reject for a token with invalid payload', async () => {
     const token = crypto.randomUUID();
 
     jsonwebtokenMock.verify.mockReturnValue({ invalid: 'payload' });
 
-    const result = await authService.verifyToken(token);
-
-    expect(result).toBeNull();
+    await expect(authService.verifyToken(token)).rejects.toThrow(
+      'Invalid token'
+    );
     expect(jsonwebtokenMock.verify).toHaveBeenCalledWith(
       token,
       expect.any(String)

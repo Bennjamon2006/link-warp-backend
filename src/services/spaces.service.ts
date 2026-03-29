@@ -1,17 +1,27 @@
+import RequestError from '@/core/RequestError';
 import { prisma } from '@/db';
+import isUniqueError from '@/helpers/isUniqueError';
 import type { CreateSpaceInput } from '@/schemas/createSpace.schema';
 
 async function createSpace(data: CreateSpaceInput, userId: string) {
-  const space = await prisma.space.create({
-    data: {
-      name: data.name,
-      slug: data.slug,
-      description: data.description,
-      ownerId: userId,
-    },
-  });
+  try {
+    const space = await prisma.space.create({
+      data: {
+        name: data.name,
+        slug: data.slug,
+        description: data.description,
+        ownerId: userId,
+      },
+    });
 
-  return space;
+    return space;
+  } catch (error) {
+    if (isUniqueError(error)) {
+      throw RequestError.conflict('Space with the same slug already exists');
+    }
+
+    throw error;
+  }
 }
 
 async function getUserSpaces(userId: string) {
@@ -31,6 +41,10 @@ async function getSpaceBySlug(slug: string) {
     },
   });
 
+  if (!space) {
+    throw RequestError.notFound('Space not found');
+  }
+
   return space;
 }
 
@@ -41,7 +55,15 @@ const checkOwnership = async (spaceId: string, userId: string) => {
     },
   });
 
-  return space?.ownerId === userId;
+  if (!space) {
+    throw RequestError.notFound('Space not found');
+  }
+
+  if (space.ownerId !== userId) {
+    throw RequestError.unauthorized(
+      'You do not have permission to perform this action'
+    );
+  }
 };
 
 export default {

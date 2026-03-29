@@ -55,32 +55,34 @@ describe('Spaces Service', () => {
     });
   });
 
-  it('should return null if space is not found', async () => {
+  it('should reject if space is not found by slug', async () => {
+    const slug = 'non-existent-slug';
+
     prismaMock.space.findUnique.mockResolvedValue(null);
 
-    const result = await spacesService.getSpaceBySlug('non-existent');
-
-    expect(result).toBeNull();
+    await expect(spacesService.getSpaceBySlug(slug)).rejects.toThrow(
+      'Space not found'
+    );
   });
 
-  it('should return true if user owns the space', async () => {
+  it('should not throw if user owns the space', async () => {
     const space = getFakeSpace();
 
     prismaMock.space.findUnique.mockResolvedValue(space);
 
-    const result = await spacesService.checkOwnership(space.id, space.ownerId);
-
-    expect(result).toBe(true);
+    await expect(
+      spacesService.checkOwnership(space.id, space.ownerId)
+    ).resolves.not.toThrow();
   });
 
-  it('should return false if user does not own the space', async () => {
+  it('should throw if user does not own the space', async () => {
     const space = getFakeSpace();
-    const otherUserId = 'different-user-id';
+    const otherUserId = crypto.randomUUID();
 
     prismaMock.space.findUnique.mockResolvedValue(space);
 
-    const result = await spacesService.checkOwnership(space.id, otherUserId);
-
-    expect(result).toBe(false);
+    await expect(
+      spacesService.checkOwnership(space.id, otherUserId)
+    ).rejects.toThrow('You do not have permission to perform this action');
   });
 });

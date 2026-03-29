@@ -1,13 +1,10 @@
 import { prisma } from '@/db';
 import type { CreateLinkInput } from '@/schemas/createLink.schema';
 import spacesService from './spaces.service';
+import RequestError from '@/core/RequestError';
 
 async function createLink(data: CreateLinkInput, userId: string) {
-  const isOwner = await spacesService.checkOwnership(data.spaceId, userId);
-
-  if (!isOwner) {
-    throw new Error('Unauthorized');
-  }
+  await spacesService.checkOwnership(data.spaceId, userId);
 
   const link = await prisma.link.create({
     data: {
@@ -35,7 +32,7 @@ async function getLinkBySlug(slug: string, spaceSlug: string) {
   });
 
   if (!space) {
-    return null;
+    throw RequestError.notFound('Space not found');
   }
 
   const link = await prisma.link.findFirst({
@@ -44,6 +41,10 @@ async function getLinkBySlug(slug: string, spaceSlug: string) {
       spaceId: space.id,
     },
   });
+
+  if (!link) {
+    throw RequestError.notFound('Link not found');
+  }
 
   return link;
 }

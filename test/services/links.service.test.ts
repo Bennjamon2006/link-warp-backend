@@ -53,27 +53,6 @@ describe('Links Service', () => {
     });
   });
 
-  it('should throw error if user does not own the space', async () => {
-    const link = getFakeLink();
-    const otherUserId = 'different-user-id';
-
-    (
-      spacesService.checkOwnership as ReturnType<typeof vi.fn>
-    ).mockResolvedValue(false);
-
-    await expect(
-      linksService.createLink(
-        {
-          name: link.name,
-          slug: link.slug,
-          url: link.url,
-          spaceId: link.spaceId,
-        },
-        otherUserId
-      )
-    ).rejects.toThrow('Unauthorized');
-  });
-
   it('should retrieve all links for a space', async () => {
     const links = [getFakeLink(), getFakeLink()];
     const spaceId = 'space-1';
@@ -109,25 +88,26 @@ describe('Links Service', () => {
     });
   });
 
-  it('should return null if space is not found', async () => {
+  it('should throw error if space is not found by slug', async () => {
+    const spaceSlug = 'non-existent-space-slug';
+    const linkSlug = 'any-link-slug';
+
     prismaMock.space.findUnique.mockResolvedValue(null);
 
-    const result = await linksService.getLinkBySlug(
-      'any-slug',
-      'non-existent-space'
-    );
-
-    expect(result).toBeNull();
+    await expect(
+      linksService.getLinkBySlug(linkSlug, spaceSlug)
+    ).rejects.toThrow('Space not found');
   });
 
-  it('should return null if link is not found in space', async () => {
+  it('should throw error if link is not found by slug', async () => {
     const space = getFakeSpace();
+    const linkSlug = 'non-existent-link-slug';
 
     prismaMock.space.findUnique.mockResolvedValue(space);
     prismaMock.link.findFirst.mockResolvedValue(null);
 
-    const result = await linksService.getLinkBySlug('non-existent', space.slug);
-
-    expect(result).toBeNull();
+    await expect(
+      linksService.getLinkBySlug(linkSlug, space.slug)
+    ).rejects.toThrow('Link not found');
   });
 });
