@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { Router } from 'express';
 import Controller from '@/core/Controller';
+import Response from '@/core/Response';
 import mockRouter from '../mocks/router.mock';
 
 describe('Controller', () => {
@@ -149,6 +150,70 @@ describe('Controller', () => {
 
     expect(handler).toHaveBeenCalled();
     expect(res.send).toHaveBeenCalledWith('test value');
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('should send custom response if handler returns an instance of CustomResponse', async () => {
+    class TestController extends Controller {
+      constructor() {
+        super();
+        this.get('/test', () => new Response('custom response', 200, {}));
+      }
+    }
+
+    const controller = new TestController();
+    const router = mockRouter();
+
+    controller.registerRoutes(router as unknown as Router);
+
+    const routeHandler = router.get.mock.calls[0][1];
+    const res = {
+      status: vi.fn().mockReturnThis(),
+      set: vi.fn().mockReturnThis(),
+      json: vi.fn(),
+      send: vi.fn(),
+    };
+    const next = vi.fn();
+
+    await routeHandler({}, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.set).toHaveBeenCalledWith({});
+    expect(res.json).toHaveBeenCalledWith('custom response');
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('should send custom response if handler resolves to an instance of CustomResponse', async () => {
+    class TestController extends Controller {
+      constructor() {
+        super();
+        this.get('/test', async () => {
+          return new Response('async custom response', 201, {
+            'X-Test': 'test',
+          });
+        });
+      }
+    }
+
+    const controller = new TestController();
+    const router = mockRouter();
+
+    controller.registerRoutes(router as unknown as Router);
+
+    const routeHandler = router.get.mock.calls[0][1];
+    const res = {
+      status: vi.fn().mockReturnThis(),
+      set: vi.fn().mockReturnThis(),
+      json: vi.fn(),
+      send: vi.fn(),
+    };
+    const next = vi.fn();
+
+    await routeHandler({}, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.set).toHaveBeenCalledWith({ 'X-Test': 'test' });
+    expect(res.json).toHaveBeenCalledWith('async custom response');
     expect(next).not.toHaveBeenCalled();
   });
 });

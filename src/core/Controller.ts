@@ -6,17 +6,24 @@ import type {
   Router,
   RequestHandler,
 } from 'express';
+import CustomResponse from './Response';
 
 type RouteMethod = 'get' | 'post' | 'put' | 'delete' | 'patch';
 
 type GenericRequest = Request<any, any, any>;
 type GenericResponse = Response<any, any>;
 
-type Handler = (
+type LegacyHandler = (
   req: GenericRequest,
   res: GenericResponse,
   next: NextFunction
 ) => void | GenericResponse | Promise<void | GenericResponse>;
+
+type CustomHandler = (
+  req: GenericRequest
+) => Promise<CustomResponse<any>> | CustomResponse<any>;
+
+type Handler = LegacyHandler | CustomHandler;
 
 type RouteDefinition = {
   method: RouteMethod;
@@ -72,7 +79,12 @@ export default abstract class Controller {
         ...middlewares,
         async (req: Request, res: Response, next: NextFunction) => {
           try {
-            await handler.call(this, req, res, next);
+            const bindedHandler = handler.bind(this);
+            const result = await bindedHandler(req, res, next);
+
+            if (result instanceof CustomResponse) {
+              result.send(res);
+            }
           } catch (error) {
             next(error);
           }
