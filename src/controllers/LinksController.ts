@@ -1,32 +1,23 @@
 import { Request } from 'express';
 import { createLinkSchema } from '@/schemas/createLink.schema';
-import { z } from 'zod';
 import linksService from '@/services/links.service';
 import Controller from '@/core/Controller';
 import { verifyAuth } from '@/middlewares/verifyAuth';
 import Response from '@/core/Response';
-import RequestError from '@/core/RequestError';
+import { validateBody } from '@/middlewares/validateBody';
 
 export default class LinksController extends Controller {
   constructor() {
     super();
 
-    this.post('/', verifyAuth, this.createLink);
+    this.post('/', verifyAuth, validateBody(createLinkSchema), this.createLink);
     this.get('/:space_slug/:link_slug', this.getLinkBySlug);
   }
 
   public async createLink(req: Request) {
     const userId = req.user!.id;
-    const result = createLinkSchema.safeParse(req.body);
 
-    if (!result.success) {
-      throw RequestError.badRequest(
-        'Invalid request body',
-        z.treeifyError(result.error)
-      );
-    }
-
-    const link = await linksService.createLink(result.data, userId);
+    const link = await linksService.createLink(req.body, userId);
     return Response.created(link);
   }
 

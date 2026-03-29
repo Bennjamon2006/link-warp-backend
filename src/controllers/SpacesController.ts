@@ -1,18 +1,22 @@
 import { Request } from 'express';
-import { z } from 'zod';
 import spacesService from '@/services/spaces.service';
 import { createSpaceSchema } from '@/schemas/createSpace.schema';
 import linksService from '@/services/links.service';
 import Controller from '@/core/Controller';
 import { verifyAuth } from '@/middlewares/verifyAuth';
 import Response from '@/core/Response';
-import RequestError from '@/core/RequestError';
+import { validateBody } from '@/middlewares/validateBody';
 
 export default class SpacesController extends Controller {
   constructor() {
     super();
 
-    this.post('/', verifyAuth, this.createSpace);
+    this.post(
+      '/',
+      verifyAuth,
+      validateBody(createSpaceSchema),
+      this.createSpace
+    );
     this.get('/', verifyAuth, this.getUserSpaces);
     this.get('/:slug', this.getSpaceBySlug);
     this.get('/:slug/links', this.getSpaceLinks);
@@ -20,16 +24,8 @@ export default class SpacesController extends Controller {
 
   public async createSpace(req: Request) {
     const userId = req.user!.id;
-    const result = createSpaceSchema.safeParse(req.body);
 
-    if (!result.success) {
-      throw RequestError.badRequest(
-        'Invalid request body',
-        z.treeifyError(result.error)
-      );
-    }
-
-    const space = await spacesService.createSpace(result.data, userId);
+    const space = await spacesService.createSpace(req.body, userId);
 
     return Response.created(space);
   }
