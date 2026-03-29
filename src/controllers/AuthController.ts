@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
+import { Request, Response as ExpressResponse } from 'express';
 import { z } from 'zod';
 import Controller from '@/core/Controller';
 import authService from '@/services/auth.service';
 import { loginSchema } from '@/schemas/login.schema';
 import config from '@/config';
+import Response from '@/core/Response';
 
 export default class AuthController extends Controller {
   constructor() {
@@ -12,7 +13,7 @@ export default class AuthController extends Controller {
     this.post('/logout', this.logout);
   }
 
-  public async login(req: Request, res: Response) {
+  public async login(req: Request, res: ExpressResponse) {
     const parseResult = loginSchema.safeParse(req.body);
 
     if (!parseResult.success) {
@@ -27,13 +28,15 @@ export default class AuthController extends Controller {
     try {
       const token = await authService.login({ email, password });
 
-      res.cookie('session_token', token, {
-        httpOnly: true,
-        secure: config.runtime.isProduction,
-        sameSite: 'lax',
-      });
-
-      res.json({ message: 'Login successful' });
+      return Response.ok({ message: 'Login successful' }).setCookie(
+        'session_token',
+        token,
+        {
+          httpOnly: true,
+          secure: config.runtime.isProduction,
+          sameSite: 'lax',
+        }
+      );
     } catch (error) {
       if (error instanceof Error && error.message === 'Invalid credentials') {
         return res.status(401).json({ error: 'Invalid email or password' });
@@ -45,8 +48,14 @@ export default class AuthController extends Controller {
     }
   }
 
-  public async logout(req: Request, res: Response) {
-    res.clearCookie('session_token');
-    res.json({ message: 'Logout successful' });
+  public async logout() {
+    return Response.ok({ message: 'Logout successful' }).clearCookie(
+      'session_token',
+      {
+        httpOnly: true,
+        secure: config.runtime.isProduction,
+        sameSite: 'lax',
+      }
+    );
   }
 }

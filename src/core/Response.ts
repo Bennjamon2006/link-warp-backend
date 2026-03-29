@@ -29,6 +29,15 @@ export default class Response<T> {
     return this;
   }
 
+  public clearCookie(name: string, options: CookieOptions = {}) {
+    this.cookies[name] = {
+      value: '',
+      options: { ...options, expires: new Date(0) },
+    };
+
+    return this;
+  }
+
   public send(res: ExpressResponse) {
     res.status(this.status).set(this.headers);
 

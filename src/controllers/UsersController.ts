@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response as ExpressResponse } from 'express';
 import { z } from 'zod';
 import usersService from '@/services/users.service';
 import { createUserSchema } from '@/schemas/createUser.schema';
@@ -6,6 +6,7 @@ import isUniqueError from '@/helpers/isUniqueError';
 import mapUser from '@/mappers/user.mapper';
 import Controller from '@/core/Controller';
 import { verifyAuth } from '@/middlewares/verifyAuth';
+import Response from '@/core/Response';
 
 export default class UsersController extends Controller {
   constructor() {
@@ -15,7 +16,7 @@ export default class UsersController extends Controller {
     this.get('/me', verifyAuth, this.getProfile);
   }
 
-  public async createUser(req: Request, res: Response) {
+  public async createUser(req: Request, res: ExpressResponse) {
     const parseResult = createUserSchema.safeParse(req.body);
 
     if (!parseResult.success) {
@@ -28,8 +29,9 @@ export default class UsersController extends Controller {
     const { name, email, password } = parseResult.data;
 
     try {
-      const user = await usersService.createUser({ name, email, password });
-      res.status(201).json(user);
+      const result = await usersService.createUser({ name, email, password });
+
+      return Response.created(result);
     } catch (error) {
       if (isUniqueError(error)) {
         return res
@@ -43,9 +45,9 @@ export default class UsersController extends Controller {
     }
   }
 
-  public async getProfile(req: Request, res: Response) {
+  public async getProfile(req: Request) {
     const user = req.user!;
 
-    res.json(mapUser(user));
+    return Response.ok(mapUser(user));
   }
 }

@@ -20,8 +20,14 @@ type LegacyHandler = (
 ) => void | GenericResponse | Promise<void | GenericResponse>;
 
 type CustomHandler = (
-  req: GenericRequest
-) => Promise<CustomResponse<any>> | CustomResponse<any>;
+  req: GenericRequest,
+  res: GenericResponse,
+  next: NextFunction
+) =>
+  | Promise<CustomResponse<any> | void | GenericResponse>
+  | CustomResponse<any>
+  | void
+  | GenericResponse;
 
 type Handler = LegacyHandler | CustomHandler;
 

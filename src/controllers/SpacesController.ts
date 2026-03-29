@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response as ExpressResponse } from 'express';
 import { z } from 'zod';
 import spacesService from '@/services/spaces.service';
 import { createSpaceSchema } from '@/schemas/createSpace.schema';
@@ -6,6 +6,7 @@ import isUniqueError from '@/helpers/isUniqueError';
 import linksService from '@/services/links.service';
 import Controller from '@/core/Controller';
 import { verifyAuth } from '@/middlewares/verifyAuth';
+import Response from '@/core/Response';
 
 export default class SpacesController extends Controller {
   constructor() {
@@ -17,7 +18,7 @@ export default class SpacesController extends Controller {
     this.get('/:slug/links', this.getSpaceLinks);
   }
 
-  public async createSpace(req: Request, res: Response) {
+  public async createSpace(req: Request, res: ExpressResponse) {
     try {
       const userId = req.user!.id;
       const result = createSpaceSchema.safeParse(req.body);
@@ -30,7 +31,8 @@ export default class SpacesController extends Controller {
       }
 
       const space = await spacesService.createSpace(result.data, userId);
-      res.status(201).json(space);
+
+      return Response.created(space);
     } catch (error) {
       if (isUniqueError(error)) {
         return res
@@ -42,18 +44,22 @@ export default class SpacesController extends Controller {
     }
   }
 
-  public async getUserSpaces(req: Request, res: Response) {
+  public async getUserSpaces(req: Request, res: ExpressResponse) {
     try {
       const userId = req.user!.id;
       const spaces = await spacesService.getUserSpaces(userId);
-      res.json(spaces);
+
+      return Response.ok(spaces);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }
 
-  public async getSpaceBySlug(req: Request<{ slug: string }>, res: Response) {
+  public async getSpaceBySlug(
+    req: Request<{ slug: string }>,
+    res: ExpressResponse
+  ) {
     try {
       const { slug } = req.params;
       const space = await spacesService.getSpaceBySlug(slug);
@@ -62,7 +68,7 @@ export default class SpacesController extends Controller {
         return res.status(404).json({ error: 'Space not found' });
       }
 
-      res.json(space);
+      return Response.ok(space);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
 
@@ -70,7 +76,10 @@ export default class SpacesController extends Controller {
     }
   }
 
-  public async getSpaceLinks(req: Request<{ slug: string }>, res: Response) {
+  public async getSpaceLinks(
+    req: Request<{ slug: string }>,
+    res: ExpressResponse
+  ) {
     try {
       const { slug } = req.params;
       const space = await spacesService.getSpaceBySlug(slug);
@@ -80,7 +89,7 @@ export default class SpacesController extends Controller {
       }
 
       const links = await linksService.getSpaceLinks(space.id);
-      res.json(links);
+      return Response.ok(links);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
 
